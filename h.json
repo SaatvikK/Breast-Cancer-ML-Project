@@ -1,0 +1,19 @@
+{
+  "modelName": "str",
+  "performance": {
+    "stats": {
+      "TP": "int",
+      "TN": "int",
+      "FN": "int",
+      "FP": "int"
+    },
+    "perfmetrics": {
+      "accuracy": "float",
+      "sensitivity": "float",
+      "specificity": "float",
+      "recall": "float",
+      "precision": "float"
+    }
+  },
+  "Ypreds": ["int", "int", "int", "..."]
+}
