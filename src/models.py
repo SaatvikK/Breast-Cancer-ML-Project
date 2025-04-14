@@ -2,13 +2,9 @@
 # V2
 # =================================== IMPORTS =================================== #
 from imports import *
-
-#from sklearn import tree
-
-#from sklearn.linear_model import LogisticRegression
-#from sklearn import svm
-#from sklearn import naive_bayes
-#from sklearn import neighbors
+import torch
+import torch.nn as nn
+import torch.optim as optim
 # =============================================================================== #
 
 # =================================== BASE MODEL =================================== #
@@ -28,21 +24,26 @@ class baseModel:
       } 
     }
   
-  def train(self, Xtrain, Ytrain):
-    try:
-      self.model.fit(Xtrain, Ytrain)
-      print(self.model)
-      #if self.modelName == "dtModel": 
-      #  plt.figure(figsize=(20, 10), dpi=200)  # bigger figure and higher DPI
-      #  skl.tree.plot_tree(self.model, filled=True)
-      #  plt.show()
-      return [True, None, self]
-    except Exception as e:
-      return [False, e, self]
+  def basetrain(self, Xtrain, Ytrain):
+    if self.modelName.lower() in ["dnn", "neuralnet", "ann"]:
+      return self.dnnTrain(Xtrain, Ytrain, noEpochs = 3000, α = 0.001) # for alpha see COMPARISON OF SGD, RMSProp, AND ADAM OPTIMATION IN ANIMAL CLASSIFICATION USING CNNsDesi Irfan1, Teddy Surya Gunawan2, Wanayumini3
+    else:
+      try:
+        self.model.fit(Xtrain, Ytrain)
+        print(self.model)
+        #if self.modelName == "dtModel": 
+        #  plt.figure(figsize=(20, 10), dpi=200)  # bigger figure and higher DPI
+        #  skl.tree.plot_tree(self.model, filled=True)
+        #  plt.show()
+        return [True, None, self]
+      except Exception as e:
+        return [False, e, self]
   
   def test(self, Xtest):
     try:
-      self.Ypreds = self.model.predict(Xtest)
+      if self.modelName.lower() in ["dnn", "neuralnet", "ann"]:
+        self.Ypreds = self.predict(Xtest)
+      else: self.Ypreds = self.model.predict(Xtest)
       return [True, None, self.Ypreds]
     except Exception as e:
       return [False, e, None]
@@ -120,8 +121,78 @@ class KNN(baseModel):
   def __init__(self, name = "knnModel"):
     super().__init__(skl.neighbors.KNeighborsClassifier(algorithm = 'ball_tree', metric = 'manhattan'), name)
 
-
 # SKLearn defaultly uses an optimised implementation of the CART decision tree algorithm.
 class DTC(baseModel):
   def __init__(self, name = "dtcModel"):
     super().__init__(skl.tree.DecisionTreeClassifier(criterion='gini', splitter='best'), name)
+
+class DNN(nn.Module, baseModel):
+  def __init__(self, inputSize, hiddenSizes, outputSize, name = "DNN"):
+    self.inputSize = inputSize
+    self.hiddenSizes = hiddenSizes
+    self.outputSize = outputSize
+    self.name = name
+
+    nn.Module.__init__(self)
+    baseModel.__init__(self, None, self.name) # Model not passed into baseModel class to avoid reaching the maximum recursion depth.
+
+    # Create a list to hold all layers
+    layers = []
+    # Define the layer sizes: start with inputSize, followed by your hidden layer sizes
+    layer_sizes = [self.inputSize] + self.hiddenSizes
+
+    # Loop to create each hidden layer with a ReLU activation
+    for i in range(len(layer_sizes) - 1):
+      layers.append(nn.Linear(layer_sizes[i], layer_sizes[i + 1]))
+      layers.append(nn.Sigmoid())
+
+    # Add the output layer (we don't usually follow the output layer with an activation like ReLU
+    # if you're performing classification with CrossEntropyLoss, as it expects raw logits)
+    layers.append(nn.Linear(hiddenSizes[-1], self.outputSize))
+    
+    # Use nn.Sequential to combine all the layers into a single network
+    self.network = nn.Sequential(*layers)
+
+  def forward(self, x):
+    # The forward method defines how the data passes through the network layers
+    return self.network(x)
+
+  def predict(self, Xtest):
+    Xtest = torch.tensor(Xtest.values, dtype=torch.float32)
+    self.eval() # setting model to evaluation mode
+    with torch.no_grad():
+      outputs = self(Xtest)
+      _, preds = torch.max(outputs, 1)
+    
+    preds = preds.numpy()
+    print(type(preds))
+    #predsdf = pd.DataFrame(preds, columns=["diagnosis"])
+    return preds
+
+  def dnnTrain(self, Xtrain, Ytrain, noEpochs = 5, α = 0.001):
+    self.criterion = nn.CrossEntropyLoss()
+    self.optimizer = optim.RMSprop(self.parameters(), lr=α)
+
+    for epoch in range(noEpochs):  # Training for 5 epochs
+      # Simulated dummy data (replace these with actual data during implementation)
+      inputs = torch.tensor(Xtrain.values, dtype=torch.float32)
+      labels = torch.tensor(Ytrain.values, dtype=torch.long)
+
+      # Zero the gradients from the previous iteration
+      self.optimizer.zero_grad()
+      
+      # Forward pass: Compute predicted outputs by passing inputs to the model
+      outputs = self(inputs)
+      
+      # Calculate the loss
+      loss = self.criterion(outputs, labels)
+      
+      # Backward pass: Compute gradient of the loss with respect to model parameters
+      loss.backward()
+      
+      # Update parameters
+      self.optimizer.step()
+      
+      # Print the loss for each epoch to track progress
+      print(f"Epoch {epoch + 1}, Loss: {loss.item():.4f}")
+    return [True, None, self]
