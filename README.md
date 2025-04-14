@@ -35,3 +35,84 @@ From above, can be seen that Manhattan yields the best results.
 `dfS` - *Source* domain dataset (in htis case, the original training dataset 1 (`./data/original/data1.csv`))
 
 We apply *CORAL* to align dfS to dfT in `src/domainAdapt.py`.
+
+
+# File Tree & Model Result JSON Format
+
+## JSON Format
+Under the `modelResults/` directory, in each experiment subdirectory there are a number of JSON files (one for each model) which stores their results and performance metrics. The format of the JSONs are as follows:
+```json
+{
+  "modelName": <str>,
+  "performance": {
+    "stats": {
+      "TP": <int>,
+      "TN": <int>,
+      "FN": <int>,
+      "FP": <int>
+    },
+    "perfmetrics": {
+      "accuracy": <float>,
+      "sensitivity": <float>,
+      "specificity": <float>,
+      "recall": <float>,
+      "precision": <float>
+    }
+  },
+  "Ypreds": [<bool>, <bool>, <bool>, ...]
+}
+
+```
+
+## File Tree
+```
+.
+├── cleanedDS1
+│   ├── ds1Test.csv
+│   └── ds1Train.csv
+├── cleanedDS2
+│   ├── debias
+│   │   └── ds2XTrain.csv, ds2XTest.csv, ... (etc.)
+│   └── nodebias
+│       └── ds2XTrain.csv, ds2XTest.csv, ... (etc.)
+├── generalise
+│   ├── DA
+│   │   └── source.csv, target.csv, ...
+│   └── noDA
+│       └── source.csv, target.csv, ...
+├── graphs
+│   ├── DS1
+│   │   └── ds1PerfMetrics.png
+│   └── DS2
+│       ├── ds2AdasynMetrics.png
+│       ├── ds2NoDebiasMetrics.png
+│       ├── ds2OverMetrics.png
+│       ├── ds2SmoteMetrics.png
+│       └── ds2UnderMetrics.png
+├── modelResults
+│   ├── DS1
+│   │   └── [ JSON files here ]
+│   └── DS2
+│       ├── debias
+│       │   └── [ JSON files here ]
+│       ├── nodebias
+│       │   └── [ JSON files here ]
+│       └── generalise
+│           ├── DA
+│           │   └── [ JSON files here ]
+│           └── noDA
+│               └── [ JSON files here ]
+├── original
+│   ├── data1.csv
+│   └── data2.csv
+└── src
+    ├── __pycache__
+    ├── debiasing.py
+    ├── domainAdapt.py
+    ├── imports.py
+    ├── main.py
+    ├── models.py
+    ├── preprocess.py
+    └── test.py
+
+```
