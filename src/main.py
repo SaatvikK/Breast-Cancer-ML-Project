@@ -91,15 +91,15 @@ def preprocInputHandler():
       dfTest.to_csv("../data/cleanedDS" + setNum + "/ds" + setNum + "Test.csv", index = False)
 
 def runModels(Xtrain, Ytrain, Xtest, Ytest, setNum = 1, debias = "", generalise = False, DA = ""):
-  reg, svm, nbc, knn, dtc = models.LRC("LinReg"), models.SVM("SVM-L"), models.NBC("NBC"), models.KNN("KNN"), models.DTC("DTC")
-  modelsArr = [reg, svm, nbc, knn, dtc]
+  reg, svm, nbc, knn, dtc, dnn = models.LRC("LinReg"), models.SVM("SVM-L"), models.NBC("NBC"), models.KNN("KNN"), models.DTC("DTC"), models.DNN(inputSize = 6, hiddenSizes = [13, 8, 5], outputSize = 2, name = "DNN")
+  modelsArr = [reg, svm, nbc, knn, dtc, dnn]
 
   # TRAIN
   print(Xtrain)
   print(Xtest)
   for i in range(len(modelsArr)):
     model = modelsArr[i]
-    isTrained, err, trainedModel = model.train(Xtrain, Ytrain)
+    isTrained, err, trainedModel = model.basetrain(Xtrain, Ytrain)
     if isTrained:
       modelsArr[i] = trainedModel
     else: raise Exception("Model " + model.modelName + " could not be trained due to: \n" + str(err))
@@ -149,6 +149,7 @@ if __name__ == "__main__":
   else:
     whichSet = int(input("Which dataset? 1 or 2? "))
     dfTrain, dfTest = pd.DataFrame(), pd.DataFrame()
+    debias = ""
     if whichSet == 2:
       debias = json.loads(input("Debias? True/False: ").lower())
       debias = "no" if debias == False else ""

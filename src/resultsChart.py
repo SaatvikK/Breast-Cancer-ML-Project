@@ -96,6 +96,7 @@ paths = [
 
 for path in paths:
   plotMetrics(
+     modelNames = ["LinReg", "SVM-L", "NBC", "KNN", "DTC", "DNN"],
     resultsPath = path["resultsPath"],
     savePath = path["savePath"],
     fileName = path["fileName"]
