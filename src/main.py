@@ -37,7 +37,6 @@ def preprocessHandler(setNum = 1, splittingSet = True):
 
     print(dfTrain.shape[0], dfTest.shape[0])
 
-  #print("dxfvd", type(ppor.df))
   return [dfTrain, dfTest, df]
 
 def preprocInputHandler():

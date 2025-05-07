@@ -28,7 +28,8 @@ class Preprocessor():
     if self.setNum == 1:
       # NOTE: the extra column only exists in the first dataset ("data.csv")
       # there's an extra column at the end of the data set that needs removing.
-      self.df = self.df.drop(columns=["id", "Unnamed: 32"])
+      try: self.df = self.df.drop(columns=["id", "Unnamed: 32"])
+      except: pass;
       # other than this, there is no more data cleaning to do.
     return self.df
   
