@@ -6,7 +6,16 @@ from collections import Counter
 from imports import *
 
 def XYsplit(df: pd.DataFrame) -> list:
-  """Function to split a df into X and Y arrays."""
+  """
+  Function to split a df into X and Y dataframes.
+  
+  Returns
+  -------
+  X : Pandas.DataFrame
+    Features dataframe.
+  Y : Pandas.Series
+    Labels series.
+  """
   Y = df["diagnosis"]
   X = df.drop(["diagnosis"], axis = 1)
   return [X, Y]

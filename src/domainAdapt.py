@@ -2,6 +2,23 @@ from imports import *
 import scipy.linalg as scila
 
 class DomainAdaptor():
+  """
+  Domain adaptation class. 
+
+  Attributes
+  ----------
+  dfS : Pandas.DataFrame
+    Source-domain dataset.
+  dfT : Pandas.DataFrame
+    Target-domain dataset.
+  
+  Methods
+  -------
+  CORAL
+  reverseCORAL
+  confToDf
+  centreMean
+  """
   def __init__(self, dfS: pd.DataFrame = pd.DataFrame(), dfT: pd.DataFrame = pd.DataFrame()):
     self.dfS = dfS
     self.dfT = dfT
@@ -27,8 +44,8 @@ class DomainAdaptor():
     Ip = np.eye(D_1.shape[1])
     C_1 = np.cov(D_1, rowvar = False) + λ*Ip
     C_2 = np.cov(D_2, rowvar = False) + λ*Ip
-    D_1temp = D_1 @ scila.fractional_matrix_power(C_1, -0.5)
-    D_1Enc = ( D_1temp @ scila.fractional_matrix_power(C_2, 0.5) ) + meanSource
+    D_1temp = D_1 @ scila.fractional_matrix_power(C_1, -0.5) #  de-correlate
+    D_1Enc = ( D_1temp @ scila.fractional_matrix_power(C_2, 0.5) ) + meanSource # re-colour
 
     df1Enc = DomainAdaptor.convToDF(colNames = df2.columns.to_list(), data = D_1Enc, labels = df2labels)
 
@@ -49,7 +66,7 @@ class DomainAdaptor():
     
     return self.dfTEnc
 
-  @staticmethod
+  @staticmethod # set as static method so an object doesnt have to be instantiated in order to call this method.
   def convToDF(colNames: list, data: np.array, labels: list) -> pd.DataFrame:
     if labels.empty:
       raise Exception("Must provide target dataset's labels for conversion to dataframe.")
@@ -64,19 +81,3 @@ class DomainAdaptor():
     newDF = df - df.mean()
 
     return [newDF, df.mean()]
-    """
-    features = df.columns.to_list()
-    if "diagnosis" in features: raise Exception("Cannot zero-mean a dataset with the classifications.")
-    newDF = df.copy()
-    # find means
-    means = []
-    for feature in features:
-      means.append(df.loc[:, feature].mean())
-    
-    for i in range(df.shape[0]):
-      for j in range(df.shape[1]):
-        x_ij = df.iloc[i,j]
-        mean = means[j]
-        zeroed_x_ij = x_ij - mean
-        newDF.iloc[i,j] = zeroed_x_ij
-    """

@@ -34,7 +34,7 @@ class Preprocessor():
     return self.df
   
   def dataCleaning(self):
-    if self.dfTrain.empty and self.splittedSet == False: raise Exception("Please split the dataset before carrying out preprocessing. Pipeline:", Preprocessor.pipeline)
+    if self.dfTrain.empty and self.splittedSet == True: raise Exception("Please split the dataset before carrying out preprocessing. Pipeline:", Preprocessor.pipeline)
 
     # now impute missing values
     numNAs = self.df.isna().sum()
@@ -61,11 +61,12 @@ class Preprocessor():
       self.df['diagnosis'] = pd.Series(self.df.diagnosis).map({'M':1,'B':0});
     elif self.setNum == 2:
       self.df["diagnosis"] = pd.Series(self.df.diagnosis).map({"1'": 1, "-1'": 0})
+    self.splitSet(testSize = 0.2)
     return self.df
   
   def corrFeatureSelection(self, k = 10, tauRedundancy = 0.8):
     df = self.dfTrain if self.splittedSet == True else self.df
-    if self.dfTrain.empty: raise Exception("Please either set splittedSet to false or split the dataset before this. Pipeline:", Preprocessor.pipeline)
+    if self.dfTrain.empty and self.splittedSet == True: raise Exception("Please either set splittedSet to false or split the dataset before this. Pipeline:", Preprocessor.pipeline)
     
     R_XY = None
     # tauRed = 0.8, k = 6

@@ -30,8 +30,8 @@ def plotMetrics(modelNames = ["LinReg", "SVM-L", "NBC", "KNN", "DTC"], resultsPa
   rects5 = ax.bar(x + 2 * width, prec, width, label="Precision")
 
   # Determine the maximum metric value to set the y-axis limit so that the text labels don't overlap the plot title
-  y_max = max(acc + spec + sen + rec + prec)
-  ax.set_ylim(0, y_max + 10)
+  yMax = max(acc + spec + sen + rec + prec)
+  ax.set_ylim(0, yMax + 10)
 
   # Add chart title, axis labels, custom tick labels, and legend
   ax.set_title('Performance Metrics by Model', pad=20)

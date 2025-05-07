@@ -5,27 +5,36 @@ import domainAdapt as da
 import models
 
 def preprocessHandler(setNum = 1, splittingSet = True):
+  """
+  Handles the preprocessor object.
+  Based on the inputs given by preprocInputHandler(), 
+  this function will determine what type of preprocessing to carry out.
+  """
   path = "../data/cleanedDS" + str(setNum) + "/ds" + str(setNum)
-  df = pd.read_csv("../data/original/data" + str(setNum) + ".csv")
+  df = pd.read_csv("../data/original/data" + str(setNum) + ".csv") # read the correct dataset
 
-  ppor = preprocess.Preprocessor(df, setNum = setNum, splittedSet = splittingSet)
+  ppor = preprocess.Preprocessor(df, setNum = setNum, splittedSet = splittingSet) # create the object
   print(ppor.pipeline)
+
+  # carry out simple pre-processing (data cleaning, class mapping)
   ppor.simpleDataCleaning()
   df = ppor.classMapping()
-  ppor.splitSet(testSize = 0.2)
   df, dfTrain, dfTest = None, None, None
-  if splittingSet == True: 
+
+  if splittingSet == True: # split dataset (if we need to) *then* do data cleaning and CFS. 
     dfTrain, dfTest, _ = ppor.dataCleaning()
 
     if int(setNum) != 2:
       cfsRes = ppor.corrFeatureSelection(k = 6, tauRedundancy = 0.8)
       dfTrain = cfsRes["selectedDF"]
-  else: 
+  else:  # Else, clean the whole set and do cfs on whole set (this is in case of transfer learning)
     _, _, df = ppor.dataCleaning()
     if int(setNum) != 2:
       cfsRes = ppor.corrFeatureSelection(k = 6, tauRedundancy = 0.8)
       df = cfsRes["selectedDF"]
 
+  # Since we dont need to apply CFS to dataset 2 / WMD, we check if we've split the DS and if it's the WBCD
+  # if yes, then CFS.
   if int(setNum) != 2 and splittingSet == True:
     ## Apply feature dropping to test set now
     dfTest = dfTest.drop([feature for feature in cfsRes["rejectedFeatures"]], axis = 1)
@@ -49,11 +58,9 @@ def preprocInputHandler():
   
   if generalise:
     DA = json.loads(input("With domain adaptation or not? True/False ").lower())
-    _, _, dfS = preprocessHandler(1, splittingSet = False)
     _, _, dfT = preprocessHandler(2, splittingSet = False)
-    
     dfT = debiasing.debiasingController(dfT, technique = "adasyn")
-
+    _, _, dfS = preprocessHandler(1, splittingSet = False)
     if DA:
       adaptor = da.DomainAdaptor(dfS = dfS, dfT = dfT)
       dfTEnc = adaptor.reverseCORAL(λ = 0.000000000000000000000000000000000001)
