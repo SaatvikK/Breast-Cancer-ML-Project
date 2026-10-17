@@ -1,3 +1,10 @@
+# DISSERTATION 
+You can find the Dissertation pdf here:
+https://github.com/SaatvikK/Breast-Cancer-ML-Project/blob/main/Bachelors%20Dissertation%20ML%20Breast%20Cancer.pdf
+
+----
+
+
 # References
 
 ### Models
